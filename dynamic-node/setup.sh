@@ -22,7 +22,7 @@
 
 # One Docker container will be configured for each IP address in $ips
 subnet="172.13.0.0/16"
-ips=("172.13.0.2" "172.13.0.3" "172.13.0.4")
+ips=("172.13.0.5")
 
 # Docker image name
 image=quorum
@@ -31,12 +31,6 @@ image=quorum
 
 nnodes=${#ips[@]}
 
-if [[ $nnodes < 2 ]]
-then
-    echo "ERROR: There must be more than one node IP address."
-    exit 1
-fi
-   
 ./cleanup.sh
 
 uid=`id -u`
@@ -47,7 +41,9 @@ pwd=`pwd`
 
 echo '[1] Configuring for '$nnodes' nodes.'
 
-n=1
+read -p "Enter Node Number (e.g. 4) : " node_number
+
+n=$node_number
 for ip in ${ips[*]}
 do
     qd=qdata_$n
@@ -60,10 +56,10 @@ done
 
 #### Make static-nodes.json and store keys #############################
 
-echo '[2] Creating Enodes and static-nodes.json.'
+echo '[2] Creating Enodes & enode-url.json for raft.AddPeer.'
 
-echo "[" > static-nodes.json
-n=1
+echo "[" > enode-url.json
+n=$node_number
 for ip in ${ips[*]}
 do
     qd=qdata_$n
@@ -75,23 +71,18 @@ do
 
     # Add the enode to static-nodes.json
     sep=`[[ $n < $nnodes ]] && echo ","`
-    echo '  "enode://'$enode'@'$ip':30303?discport=0&raftport=50400"'$sep >> static-nodes.json
+    echo '  "enode://'$enode'@'$ip':30303?discport=0&raftport=50400"'$sep >> enode-url.json
 
     let n++
 done
-echo "]" >> static-nodes.json
+echo "]" >> enode-url.json
 
 
 #### Create accounts, keys and genesis.json file #######################
 
-echo '[3] Creating Ether accounts and genesis.json.'
+echo '[3] Creating Ether accounts.'
 
-cat > genesis.json <<EOF
-{
-  "alloc": {
-EOF
-
-n=1
+n=$node_number
 for ip in ${ips[*]}
 do
     qd=qdata_$n
@@ -99,39 +90,13 @@ do
     # Generate an Ether account for the node
     touch $qd/passwords.txt
     account=`docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/geth --datadir=/qdata/dd --password /qdata/passwords.txt account new | cut -c 11-50`
-
-    # Add the account to the genesis block so it has some Ether at start-up
-    sep=`[[ $n < $nnodes ]] && echo ","`
-    cat >> genesis.json <<EOF
-    "${account}": {
-      "balance": "1000000000000000000000000000"
-    }${sep}
-EOF
-
     let n++
 done
-
-cat >> genesis.json <<EOF
-  },
-  "coinbase": "0x0000000000000000000000000000000000000000",
-  "config": {
-    "homesteadBlock": 0
-  },
-  "difficulty": "0x0",
-  "extraData": "0x",
-  "gasLimit": "0x2FEFD800",
-  "mixhash": "0x00000000000000000000000000000000000000647572616c65787365646c6578",
-  "nonce": "0x0",
-  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "timestamp": "0x00"
-}
-EOF
-
 
 #### Make node list for tm.conf ########################################
 
 nodelist=
-n=1
+n=$node_number
 for ip in ${ips[*]}
 do
     sep=`[[ $ip != ${ips[0]} ]] && echo ","`
@@ -144,7 +109,7 @@ done
 
 echo '[4] Creating Quorum keys and finishing configuration.'
 
-n=1
+n=$node_number
 for ip in ${ips[*]}
 do
     qd=qdata_$n
@@ -153,9 +118,6 @@ do
         | sed s/_NODEIP_/${ips[$((n-1))]}/g \
         | sed s%_NODELIST_%$nodelist%g \
               > $qd/tm.conf
-
-    cp genesis.json $qd/genesis.json
-    cp static-nodes.json $qd/dd/static-nodes.json
 
     # Generate Quorum-related keys (used by Constellation)
     docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/constellation-node --generatekeys=qdata/keys/tm < /dev/null > /dev/null
@@ -166,8 +128,6 @@ do
 
     let n++
 done
-rm -rf genesis.json static-nodes.json
-
 
 #### Create the docker-compose file ####################################
 
@@ -176,7 +136,7 @@ version: '2'
 services:
 EOF
 
-n=1
+n=$node_number
 for ip in ${ips[*]}
 do
     qd=qdata_$n
