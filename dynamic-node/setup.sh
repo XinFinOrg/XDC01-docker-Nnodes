@@ -124,7 +124,11 @@ do
     docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/constellation-node --generatekeys=qdata/keys/tm < /dev/null > /dev/null
     echo 'Node '$n' public key: '`cat $qd/keys/tm.pub`
 
-    cp templates/start-node.sh $qd/start-node.sh
+    cat templates/start-node.sh \
+        | sed s/_RAFTID_/$node_number/g \
+              > $qd/start-node.sh
+
+    #cp templates/start-node.sh $qd/start-node.sh
     chmod 755 $qd/start-node.sh
 
     let n++
