@@ -147,12 +147,12 @@ do
     image: $image
     volumes:
       - './$qd:/qdata'
-    networks:
-      quorum_net:
-        ipv4_address: '$ip'
     ports:
       - $((n+22000)):8545
     user: '$uid:$gid'
+    networks:
+            default:
+                ipv4_address: $node_ip
 EOF
 
     let n++
@@ -161,10 +161,7 @@ done
 cat >> docker-compose.yml <<EOF
 
 networks:
-  quorum_net:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-      - subnet: $subnet
+  default:
+    external:
+      name: staticnodes_quorum_net
 EOF
