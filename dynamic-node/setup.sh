@@ -72,7 +72,7 @@ do
 
     # Add the enode to static-nodes.json
     sep=`[[ $n < $nnodes ]] && echo ","`
-    echo '  "enode://'$enode'@'$ip':30303?discport=0&raftport=50400"'$sep >> enode-url.json
+    echo '  "enode://'$enode'@'$ip':'$((n+21000))'?discport=0&raftport='$((n+23000))'"'$sep >> enode-url.json
 
     let n++
 done
@@ -125,6 +125,9 @@ do
     echo 'Node '$n' public key: '`cat $qd/keys/tm.pub`
 
     cat templates/start-node.sh \
+        | sed s/_PORT_/$((n+21000))/g \
+        | sed s/_RPCPORT_/$((n+22000))/g \
+        | sed s/_RAFTPORT_/$((n+23000))/g \
         | sed s/_RAFTID_/$node_number/g \
               > $qd/start-node.sh
 
@@ -151,12 +154,14 @@ do
     image: $image
     volumes:
       - './$qd:/qdata'
-    ports:
-      - $((n+22000)):8545
-    user: '$uid:$gid'
     networks:
-            default:
-                ipv4_address: $node_ip
+      quorum_net:
+        ipv4_address: '$node_ip'
+    ports:
+      - $((n+21000)):$((n+21000))
+      - $((n+22000)):$((n+22000))
+      - $((n+23000)):$((n+23000))
+    user: '$uid:$gid'
 EOF
 
     let n++
@@ -165,7 +170,10 @@ done
 cat >> docker-compose.yml <<EOF
 
 networks:
-  default:
-    external:
-      name: staticnodes_quorum_net
+  quorum_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: $subnet
 EOF
