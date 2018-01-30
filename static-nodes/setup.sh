@@ -36,7 +36,7 @@ then
     echo "ERROR: There must be more than one node IP address."
     exit 1
 fi
-   
+
 ./cleanup.sh
 
 uid=`id -u`
@@ -72,10 +72,9 @@ do
     docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/bootnode -genkey /qdata/dd/nodekey
     enode=`docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/bootnode --nodekey /qdata/dd/nodekey -writeaddress`
 
-
     # Add the enode to static-nodes.json
     sep=`[[ $n < $nnodes ]] && echo ","`
-    echo '  "enode://'$enode'@'$ip':30303?discport=0&raftport=50400"'$sep >> static-nodes.json
+    echo '  "enode://'$enode'@'$ip':'$((n+21000))'?discport=0&raftport='$((n+23000))'"'$sep >> static-nodes.json
 
     let n++
 done
@@ -135,7 +134,7 @@ n=1
 for ip in ${ips[*]}
 do
     sep=`[[ $ip != ${ips[0]} ]] && echo ","`
-    nodelist=${nodelist}${sep}'"http://'${ip}':9000/"'
+    nodelist=${nodelist}${sep}'"http://'${ip}':'$((n+9000))'/"'
     let n++
 done
 
@@ -161,7 +160,13 @@ do
     docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/constellation-node --generatekeys=qdata/keys/tm < /dev/null > /dev/null
     echo 'Node '$n' public key: '`cat $qd/keys/tm.pub`
 
-    cp templates/start-node.sh $qd/start-node.sh
+    cat templates/start-node.sh \
+        | sed s/_PORT_/$((n+21000))/g \
+        | sed s/_RPCPORT_/$((n+22000))/g \
+        | sed s/_RAFTPORT_/$((n+23000))/g \
+              > $qd/start-node.sh
+
+    #cp templates/start-node.sh $qd/start-node.sh
     chmod 755 $qd/start-node.sh
 
     let n++
@@ -190,7 +195,10 @@ do
       quorum_net:
         ipv4_address: '$ip'
     ports:
-      - $((n+22000)):8545
+      - $((n+21000)):$((n+21000))
+      - $((n+22000)):$((n+22000))
+      - $((n+23000)):$((n+23000))
+      - $((n+9000)):$((n+9000))
     user: '$uid:$gid'
 EOF
 
