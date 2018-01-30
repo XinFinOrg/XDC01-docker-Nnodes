@@ -151,6 +151,7 @@ do
     cat templates/tm.conf \
         | sed s/_NODEIP_/${ips[$((n-1))]}/g \
         | sed s%_NODELIST_%$nodelist%g \
+        | sed s/_NODEPORT_/$((n+9000))/g \
               > $qd/tm.conf
 
     cp genesis.json $qd/genesis.json

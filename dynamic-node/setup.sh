@@ -101,7 +101,7 @@ n=$node_number
 for ip in ${ips[*]}
 do
     sep=`[[ $ip != ${ips[0]} ]] && echo ","`
-    nodelist=${nodelist}${sep}'"http://'${ip}':9000/"'
+    nodelist=${nodelist}${sep}'"http://'${ip}':'$((n+9000))'/"'
     let n++
 done
 
@@ -116,8 +116,9 @@ do
     qd=qdata_$n
 
     cat templates/tm.conf \
-        | sed s/_NODEIP_/${ips[$((n-1))]}/g \
+        | sed s/_NODEIP_/$node_ip/g \
         | sed s%_NODELIST_%$nodelist%g \
+        | sed s/_NODEPORT_/$((n+9000))/g \
               > $qd/tm.conf
 
     # Generate Quorum-related keys (used by Constellation)
