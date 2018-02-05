@@ -4,6 +4,9 @@ Run a bunch of Quorum nodes, each in a separate Docker container.
 
 ## Install Docker & Docker Compose
 
+    ./install_docker.sh
+
+
 ## Building
 
 In the top level directory:
