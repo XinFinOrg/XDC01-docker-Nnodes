@@ -52,14 +52,13 @@ This will set up as many Quorum nodes as IP addresses you supplied, each in a se
     ./setup.sh
   
 
-### Copy genesis.json from static-nodes/qdata_n to dyanmic-node/qdata_n
+### Copy genesis.json from static-nodes/qdata_n to dynamic-node/qdata_n
 
-### Copy enodeID from enode-url.json 
+### Copy enodeID from enode-url.json attach to a geth console to any of the staticnodes & do 
     
-    docker exec -it staticnodes_node_1_1 geth attach /qdata/dd/geth.ipc
     raft.addPeer(enodeID)
 
-### Start Dyanmic Peer
+### Start Dynamic Peer
     cd dynamic-node
     docker-compose up -d
    
