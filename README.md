@@ -2,6 +2,8 @@
 
 Run a bunch of Quorum nodes, each in a separate Docker container.
 
+## Install Docker & Docker Compose
+
 ## Building
 
 In the top level directory:
@@ -19,6 +21,9 @@ Change to the *Nnodes/* directory. Edit the `ips` variable in *setup.sh* to list
 The IP addresses are needed for Constellation to work. Now run,
 
     ./setup.sh
+    
+    #Change Private IP's to Public IP in static-nodes.json
+    
     docker-compose up -d
     
 This will set up as many Quorum nodes as IP addresses you supplied, each in a separate container, on a Docker network, all hopefully talking to each other.
