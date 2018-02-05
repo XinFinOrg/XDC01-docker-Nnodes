@@ -23,6 +23,7 @@ Change to the *Nnodes/* directory. Edit the `ips` variable in *setup.sh* to list
 
 The IP addresses are needed for Constellation to work. Now run,
 
+    cd static_nodes 
     ./setup.sh
     docker-compose up -d
     
