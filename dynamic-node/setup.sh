@@ -4,25 +4,17 @@
 # Create all the necessary scripts, keys, configurations etc. to run
 # a cluster of N Quorum nodes with Raft consensus.
 #
-# The nodes will be in Docker containers. List the IP addresses that
-# they will run at below (arbitrary addresses are fine).
-#
 # Run the cluster with "docker-compose up -d"
-#
-# Run a console on Node N with "geth attach qdata_N/dd/geth.ipc"
-# (assumes Geth is installed on the host.)
 #
 # Geth and Constellation logfiles for Node N will be in qdata_N/logs/
 #
 
-# TODO: check file access permissions, especially for keys.
-
-
 #### Configuration options #############################################
 
-# One Docker container will be configured for each IP address in $ips
-subnet="172.13.0.0/16"
-read -p "Enter Node IP (e.g. 172.13.0.5) : " node_ip
+# One Docker container will be configured for each IP address in this subnet
+subnet="172.14.0.0/16"
+
+read -p "Please enter public IP of this host machine : " node_ip
 ips=("$node_ip")
 
 # Docker image name
@@ -101,7 +93,7 @@ n=$node_number
 for ip in ${ips[*]}
 do
     sep=`[[ $ip != ${ips[0]} ]] && echo ","`
-    nodelist=${nodelist}${sep}'"http://'${ip}':'$((n+9000))'/"'
+    nodelist=${nodelist}${sep}'"http://'${public_ip}':'$((n+9000))'/"'
     let n++
 done
 
@@ -156,8 +148,7 @@ do
     volumes:
       - './$qd:/qdata'
     networks:
-      quorum_net:
-        ipv4_address: '$node_ip'
+      - quorum_net
     ports:
       - $((n+21000)):$((n+21000))
       - $((n+22000)):$((n+22000))

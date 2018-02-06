@@ -4,32 +4,23 @@
 # Create all the necessary scripts, keys, configurations etc. to run
 # a cluster of N Quorum nodes with Raft consensus.
 #
-# The nodes will be in Docker containers. List the IP addresses that
-# they will run at below (arbitrary addresses are fine).
-#
 # Run the cluster with "docker-compose up -d"
-#
-# Run a console on Node N with "geth attach qdata_N/dd/geth.ipc"
-# (assumes Geth is installed on the host.)
 #
 # Geth and Constellation logfiles for Node N will be in qdata_N/logs/
 #
 
-# TODO: check file access permissions, especially for keys.
-
-
 #### Configuration options #############################################
 
-# One Docker container will be configured for each IP address in $ips
+# One Docker container will be configured for each IP address in this subnet
 subnet="172.13.0.0/16"
-ips=("172.13.0.2" "172.13.0.3" "172.13.0.4")
+
+read -p "Please enter no. of inital nodes you wish to setup (min. 2) : " nnodes
+read -p "Please enter public IP of this host machine : " public_ip
 
 # Docker image name
 image=quorum
 
 ########################################################################
-
-nnodes=${#ips[@]}
 
 if [[ $nnodes < 2 ]]
 then
@@ -47,24 +38,19 @@ pwd=`pwd`
 
 echo '[1] Configuring for '$nnodes' nodes.'
 
-n=1
-for ip in ${ips[*]}
+for n in $(seq 1 $nnodes)
 do
     qd=qdata_$n
     mkdir -p $qd/{logs,keys}
     mkdir -p $qd/dd/geth
-
-    let n++
 done
-
 
 #### Make static-nodes.json and store keys #############################
 
 echo '[2] Creating Enodes and static-nodes.json.'
 
 echo "[" > static-nodes.json
-n=1
-for ip in ${ips[*]}
+for n in $(seq 1 $nnodes)
 do
     qd=qdata_$n
 
@@ -74,12 +60,10 @@ do
 
     # Add the enode to static-nodes.json
     sep=`[[ $n < $nnodes ]] && echo ","`
-    echo '  "enode://'$enode'@'$ip':'$((n+21000))'?discport=0&raftport='$((n+23000))'"'$sep >> static-nodes.json
+    echo '  "enode://'$enode'@'$public_ip':'$((n+21000))'?discport=0&raftport='$((n+23000))'"'$sep >> static-nodes.json
 
-    let n++
 done
 echo "]" >> static-nodes.json
-
 
 #### Create accounts, keys and genesis.json file #######################
 
@@ -90,8 +74,7 @@ cat > genesis.json <<EOF
   "alloc": {
 EOF
 
-n=1
-for ip in ${ips[*]}
+for n in $(seq 1 $nnodes)
 do
     qd=qdata_$n
 
@@ -107,7 +90,6 @@ do
     }${sep}
 EOF
 
-    let n++
 done
 
 cat >> genesis.json <<EOF
@@ -129,13 +111,12 @@ EOF
 
 #### Make node list for tm.conf ########################################
 
-nodelist=
-n=1
-for ip in ${ips[*]}
+
+nodelist=()
+for n in $(seq 1 $nnodes)
 do
-    sep=`[[ $ip != ${ips[0]} ]] && echo ","`
-    nodelist=${nodelist}${sep}'"http://'${ip}':'$((n+9000))'/"'
-    let n++
+    sep=`[[ $n != 1 ]] && echo ","`
+    nodelist=${nodelist}${sep}'"http://'${public_ip}':'$((n+9000))'/"'
 done
 
 
@@ -143,13 +124,12 @@ done
 
 echo '[4] Creating Quorum keys and finishing configuration.'
 
-n=1
-for ip in ${ips[*]}
+for n in $(seq 1 $nnodes)
 do
     qd=qdata_$n
 
     cat templates/tm.conf \
-        | sed s/_NODEIP_/${ips[$((n-1))]}/g \
+        | sed s/_NODEIP_/$public_ip/g \
         | sed s%_NODELIST_%$nodelist%g \
         | sed s/_NODEPORT_/$((n+9000))/g \
               > $qd/tm.conf
@@ -170,10 +150,8 @@ do
     #cp templates/start-node.sh $qd/start-node.sh
     chmod 755 $qd/start-node.sh
 
-    let n++
 done
 rm -rf genesis.json static-nodes.json
-
 
 #### Create the docker-compose file ####################################
 
@@ -182,8 +160,7 @@ version: '2'
 services:
 EOF
 
-n=1
-for ip in ${ips[*]}
+for n in $(seq 1 $nnodes)
 do
     qd=qdata_$n
 
@@ -193,8 +170,7 @@ do
     volumes:
       - './$qd:/qdata'
     networks:
-      quorum_net:
-        ipv4_address: '$ip'
+      - quorum_net
     ports:
       - $((n+21000)):$((n+21000))
       - $((n+22000)):$((n+22000))
@@ -203,7 +179,6 @@ do
     user: '$uid:$gid'
 EOF
 
-    let n++
 done
 
 cat >> docker-compose.yml <<EOF
