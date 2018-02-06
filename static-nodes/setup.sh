@@ -67,50 +67,19 @@ echo "]" >> static-nodes.json
 
 #### Create accounts, keys and genesis.json file #######################
 
-echo '[3] Creating Ether accounts and genesis.json.'
-
-cat > genesis.json <<EOF
-{
-  "alloc": {
-EOF
+echo '[3] Copying genesis.json'
 
 for n in $(seq 1 $nnodes)
 do
     qd=qdata_$n
-
-    # Generate an Ether account for the node
+    # Generate passwords.txt for unlocking accounts, To-Do Accept user-input for password
     touch $qd/passwords.txt
-    account=`docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/geth --datadir=/qdata/dd --password /qdata/passwords.txt account new | cut -c 11-50`
-
-    # Add the account to the genesis block so it has some Ether at start-up
-    sep=`[[ $n < $nnodes ]] && echo ","`
-    cat >> genesis.json <<EOF
-    "${account}": {
-      "balance": "1000000000000000000000000000"
-    }${sep}
-EOF
-
+    cp ../genesis.json $qd/genesis.json
+    mkdir -p $qd/dd/keystore
+    cp ../keys/key.json $qd/dd/keystore/key
 done
 
-cat >> genesis.json <<EOF
-  },
-  "coinbase": "0x0000000000000000000000000000000000000000",
-  "config": {
-    "homesteadBlock": 0
-  },
-  "difficulty": "0x0",
-  "extraData": "0x",
-  "gasLimit": "0x2FEFD800",
-  "mixhash": "0x00000000000000000000000000000000000000647572616c65787365646c6578",
-  "nonce": "0x0",
-  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "timestamp": "0x00"
-}
-EOF
-
-
 #### Make node list for tm.conf ########################################
-
 
 nodelist=()
 for n in $(seq 1 $nnodes)
@@ -134,7 +103,6 @@ do
         | sed s/_NODEPORT_/$((n+9000))/g \
               > $qd/tm.conf
 
-    cp genesis.json $qd/genesis.json
     cp static-nodes.json $qd/dd/static-nodes.json
 
     # Generate Quorum-related keys (used by Constellation)
@@ -147,11 +115,10 @@ do
         | sed s/_RAFTPORT_/$((n+23000))/g \
               > $qd/start-node.sh
 
-    #cp templates/start-node.sh $qd/start-node.sh
     chmod 755 $qd/start-node.sh
 
 done
-rm -rf genesis.json static-nodes.json
+rm -rf static-nodes.json
 
 #### Create the docker-compose file ####################################
 

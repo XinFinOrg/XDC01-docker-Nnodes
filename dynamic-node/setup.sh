@@ -49,7 +49,7 @@ done
 
 #### Make static-nodes.json and store keys #############################
 
-echo '[2] Creating Enodes & enode-url.json for raft.AddPeer.'
+echo '[2] Creating Enodes & enode-url.json for raft.addPeer'
 
 echo "[" > enode-url.json
 n=$node_number
@@ -62,10 +62,11 @@ do
     enode=`docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/bootnode --nodekey /qdata/dd/nodekey -writeaddress`
 
 
-    # Add the enode to static-nodes.json
+    # Add the enode to enode-url.json
     sep=`[[ $n < $nnodes ]] && echo ","`
     echo '  "enode://'$enode'@'$ip':'$((n+21000))'?discport=0&raftport='$((n+23000))'"'$sep >> enode-url.json
-
+    echo '  [*] Login to geth console of any node of existing cluster & run the following command:'
+    echo '  raft.addPeer("enode://'$enode'@'$ip':'$((n+21000))'?discport=0&raftport='$((n+23000))'")'
     let n++
 done
 echo "]" >> enode-url.json
@@ -73,16 +74,17 @@ echo "]" >> enode-url.json
 
 #### Create accounts, keys and genesis.json file #######################
 
-echo '[3] Creating Ether accounts.'
+echo '[3] Copying genesis.json'
 
 n=$node_number
 for ip in ${ips[*]}
 do
     qd=qdata_$n
-
-    # Generate an Ether account for the node
+    # Generate passwords.txt for unlocking accounts, To-Do Accept user-input for password
     touch $qd/passwords.txt
-    account=`docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/geth --datadir=/qdata/dd --password /qdata/passwords.txt account new | cut -c 11-50`
+    cp ../genesis.json $qd/genesis.json
+    mkdir -p $qd/dd/keystore
+    cp ../keys/key.json $qd/dd/keystore/key
     let n++
 done
 
