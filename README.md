@@ -111,13 +111,4 @@ Step 01 :- Deploy ForLoop To transfer Token in recpective Accounts
 ```
 
 ```
-Live Deployed 
-Date:- 9-2-2018
-
-New Migration 
-Quorum RPC :-
-IP : 62.233.65.7
-Port : 22004
-Web Wallet :- http://62.233.65.7:3000/
-XDC Explorer :- http://62.233.65.7:3001/
-```
+#Thank You
