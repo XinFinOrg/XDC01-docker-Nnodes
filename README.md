@@ -1,16 +1,17 @@
 # XDC01-docker-Nnodes 
 
-## Install Docker & Docker Compose
+## Launch Ubuntu 16.04 Instance
 
+## Clone Repository
+    git clone -b "multi-node" https://github.com/XinFinorg/XDC01-docker-Nnodes.git    
+   
+## Install Docker & Docker Compose
     sudo ./install_docker.sh
 
-## Building
+## Pull Image from Docker Hub
+    sudo docker pull xinfinorg/quorum:v2.0.0
 
-In the top level directory:
-
-    sudo docker build -t quorum .
-
-## Running 
+## Setup 
 
     cd static-nodes 
     sudo ./setup.sh
@@ -26,6 +27,20 @@ In the top level directory:
 ## Accessing the Geth console
 
     sudo docker exec -it staticnodes_node_1_1 geth attach /qdata/dd/geth.ipc
+
+# Upgrade Quorum
+
+## Pull newer version of quorum from docker hub
+    sudo docker pull xinfinorg/quorum:v2.0.1-pre
+
+## Update docker-compose.yml to use new image (specify quorum:TAG_NAME as argument)
+    sudo ./update_quorum.sh quorum:v2.0.1-pre
+
+## Stop containers running old version
+    sudo docker-compose down
+  
+## Run new version     
+    sudo docker-compose up -d
 
 
 ## Dynamically Adding a New RAFT Node on a separate/same host machine 
