@@ -1,16 +1,30 @@
 # XDC01-docker-Nnodes 
 
+## Launch Ubuntu 16.04 Instance
+
+## Clone Repository
+   git clone -b "multi-node" https://github.com/XinFinorg/XDC01-docker-Nnodes.git
+   cd XDC01-docker-Nnodes
+   
 ## Install Docker & Docker Compose
+sudo ./install_docker.sh
 
-    sudo ./install_docker.sh
+## Pull Image from Docker Hub
+sudo docker pull xinfinorg/quorum:v2.0.0
 
-## Building
+## Upgrading to a newer version of quorum
+   sudo docker pull xinfinorg/quorum:v2.0.1-pre
 
-In the top level directory:
+## Update docker-compose.yml to use new image
+   sudo ./update_quorum.sh quorum:v2.0.1-pre
 
-    sudo docker build -t quorum .
+## Stop containers running old version
+    sudo docker-compose down
+  
+## Run new version     
+    sudo docker-compose up -d
 
-## Running 
+## Setup 
 
     cd static-nodes 
     sudo ./setup.sh
