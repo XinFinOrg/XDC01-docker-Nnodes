@@ -18,7 +18,7 @@ read -p "Please enter no. of inital nodes you wish to setup (min. 2) : " nnodes
 read -p "Please enter public IP of this host machine : " public_ip
 
 # Docker image name
-image=quorum
+image=xinfinorg/quorum:v2.0.0
 
 ########################################################################
 
