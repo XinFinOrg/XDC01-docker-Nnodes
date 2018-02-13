@@ -18,7 +18,7 @@ read -p "Please enter public IP of this host machine : " node_ip
 ips=("$node_ip")
 
 # Docker image name
-image=quorum
+image=xinfinorg/quorum:v2.0.0
 
 ########################################################################
 
