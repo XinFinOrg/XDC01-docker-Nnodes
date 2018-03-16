@@ -11,11 +11,11 @@
 
 #### Configuration options #############################################
 
-# One Docker container will be configured for each IP address in this subnet
-subnet="172.14.0.0/16"
-
 read -p "Please enter public IP of this host machine : " node_ip
 ips=("$node_ip")
+
+# One Docker container will be configured for each IP address in this subnet
+read -p "Please enter a unique subnet to use for local docker n/w (e.g. 172.13.0.0/16) : " docker_subnet
 
 # Docker image name
 image=xinfinorg/quorum:v2.0.0
@@ -150,7 +150,7 @@ do
     volumes:
       - './$qd:/qdata'
     networks:
-      - quorum_net
+      - xdc_dynamic_node_network
     ports:
       - $((n+21000)):$((n+21000))
       - $((n+22000)):$((n+22000))
@@ -164,10 +164,10 @@ done
 cat >> docker-compose.yml <<EOF
 
 networks:
-  quorum_net:
+  xdc_dynamic_node_network:
     driver: bridge
     ipam:
       driver: default
       config:
-      - subnet: $subnet
+      - subnet: $docker_subnet
 EOF
