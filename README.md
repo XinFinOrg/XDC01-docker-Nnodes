@@ -37,10 +37,10 @@
     sudo ./update_quorum.sh quorum:v2.0.1-pre
 
 ## Stop containers running old version
-   sudo docker-compose -p <PROJECT_NAME_STATIC/DYNAMIC_NODE> down
+    sudo docker-compose -p <PROJECT_NAME_STATIC/DYNAMIC_NODE> down
   
 ## Run new version     
-   sudo docker-compose -p <PROJECT_NAME_STATIC/DYNAMIC_NODE> up -d
+    sudo docker-compose -p <PROJECT_NAME_STATIC/DYNAMIC_NODE> up -d
 
 ## Dynamically Adding a New RAFT Node on a separate/same host machine 
 
