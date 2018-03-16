@@ -134,6 +134,7 @@ do
     cat >> docker-compose.yml <<EOF
   node_$n:
     image: $image
+    restart: always
     volumes:
       - './$qd:/qdata'
     networks:
