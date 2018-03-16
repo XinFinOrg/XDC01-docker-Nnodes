@@ -18,15 +18,15 @@
 
     Enter the inital number of nodes & public IP address of host machine & then start the nodes using.
 
-    sudo docker-compose up -d
+    sudo docker-compose -p <PROJECT_NAME_STATIC_NODE> up -d
 
 ## Stopping
 
-    sudo docker-compose down
+    sudo docker-compose -p <PROJECT_NAME_STATIC_NODE> down
 
 ## Accessing the Geth console
 
-    sudo docker exec -it staticnodes_node_1_1 geth attach /qdata/dd/geth.ipc
+    sudo docker exec -it PROJECT_NAME_STATIC_NODES_node_1_1 geth attach /qdata/dd/geth.ipc
 
 # Upgrade Quorum
 
@@ -37,11 +37,10 @@
     sudo ./update_quorum.sh quorum:v2.0.1-pre
 
 ## Stop containers running old version
-    sudo docker-compose down
+   sudo docker-compose -p <PROJECT_NAME_STATIC/DYNAMIC_NODE> down
   
 ## Run new version     
-    sudo docker-compose up -d
-
+   sudo docker-compose -p <PROJECT_NAME_STATIC/DYNAMIC_NODE> up -d
 
 ## Dynamically Adding a New RAFT Node on a separate/same host machine 
 
@@ -58,7 +57,7 @@
 
 ### Start dynamic raft peer
     cd dynamic-node
-    sudo docker-compose up -d
+    sudo docker-compose -p <PROJECT_NAME_DYNAMIC_NODE> up -d
 
  # Migration Process 
 
