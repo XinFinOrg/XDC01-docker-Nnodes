@@ -159,3 +159,8 @@ networks:
       config:
       - subnet: $docker_subnet
 EOF
+
+echo '[5] Removing temporary containers.'
+# Remove temporary containers created for keys & enode addresses - Note this will remove ALL stopped containers
+docker container prune -f > /dev/null 2>&1
+
