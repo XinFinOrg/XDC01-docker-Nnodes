@@ -156,6 +156,7 @@ do
       - $((n+21000)):$((n+21000))
       - $((n+22000)):$((n+22000))
       - $((n+23000)):$((n+23000))
+      - $((n+9000)):$((n+9000))
     user: '$uid:$gid'
 EOF
 
@@ -172,3 +173,7 @@ networks:
       config:
       - subnet: $docker_subnet
 EOF
+
+echo '[5] Removing temporary containers.'
+# Remove temporary containers created for keys & enode addresses - Note this will remove ALL stopped containers
+docker container prune -f > /dev/null 2>&1
