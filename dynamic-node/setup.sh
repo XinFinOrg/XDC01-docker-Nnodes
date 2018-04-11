@@ -4,29 +4,21 @@
 # Create all the necessary scripts, keys, configurations etc. to run
 # a cluster of N Quorum nodes with Raft consensus.
 #
-# The nodes will be in Docker containers. List the IP addresses that
-# they will run at below (arbitrary addresses are fine).
-#
 # Run the cluster with "docker-compose up -d"
-#
-# Run a console on Node N with "geth attach qdata_N/dd/geth.ipc"
-# (assumes Geth is installed on the host.)
 #
 # Geth and Constellation logfiles for Node N will be in qdata_N/logs/
 #
 
-# TODO: check file access permissions, especially for keys.
-
-
 #### Configuration options #############################################
 
-# One Docker container will be configured for each IP address in $ips
-subnet="172.13.0.0/16"
-read -p "Enter Node IP (e.g. 172.13.0.5) : " node_ip
+read -p "Please enter public IP of this host machine : " node_ip
 ips=("$node_ip")
 
+# One Docker container will be configured for each IP address in this subnet
+read -p "Please enter a unique subnet to use for local docker n/w (e.g. 172.13.0.0/16) : " docker_subnet
+
 # Docker image name
-image=quorum
+image=xinfinorg/quorum:v2.0.0
 
 ########################################################################
 
@@ -57,7 +49,7 @@ done
 
 #### Make static-nodes.json and store keys #############################
 
-echo '[2] Creating Enodes & enode-url.json for raft.AddPeer.'
+echo '[2] Creating Enodes & enode-url.json for raft.addPeer'
 
 echo "[" > enode-url.json
 n=$node_number
@@ -70,10 +62,11 @@ do
     enode=`docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/bootnode --nodekey /qdata/dd/nodekey -writeaddress`
 
 
-    # Add the enode to static-nodes.json
+    # Add the enode to enode-url.json
     sep=`[[ $n < $nnodes ]] && echo ","`
-    echo '  "enode://'$enode'@'$ip':30303?discport=0&raftport=50400"'$sep >> enode-url.json
-
+    echo '  "enode://'$enode'@'$ip':'$((n+21000))'?discport=0&raftport='$((n+23000))'"'$sep >> enode-url.json
+    echo '  [*] Login to geth console of any node of existing cluster & run the following command:'
+    echo '  raft.addPeer("enode://'$enode'@'$ip':'$((n+21000))'?discport=0&raftport='$((n+23000))'")'
     let n++
 done
 echo "]" >> enode-url.json
@@ -81,16 +74,17 @@ echo "]" >> enode-url.json
 
 #### Create accounts, keys and genesis.json file #######################
 
-echo '[3] Creating Ether accounts.'
+echo '[3] Copying genesis.json'
 
 n=$node_number
 for ip in ${ips[*]}
 do
     qd=qdata_$n
-
-    # Generate an Ether account for the node
+    # Generate passwords.txt for unlocking accounts, To-Do Accept user-input for password
     touch $qd/passwords.txt
-    account=`docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/geth --datadir=/qdata/dd --password /qdata/passwords.txt account new | cut -c 11-50`
+    cp ../genesis.json $qd/genesis.json
+    mkdir -p $qd/dd/keystore
+    cp ../keys/key.json $qd/dd/keystore/key
     let n++
 done
 
@@ -101,7 +95,7 @@ n=$node_number
 for ip in ${ips[*]}
 do
     sep=`[[ $ip != ${ips[0]} ]] && echo ","`
-    nodelist=${nodelist}${sep}'"http://'${ip}':9000/"'
+    nodelist=${nodelist}${sep}'"http://'${public_ip}':'$((n+9000))'/"'
     let n++
 done
 
@@ -116,8 +110,9 @@ do
     qd=qdata_$n
 
     cat templates/tm.conf \
-        | sed s/_NODEIP_/${ips[$((n-1))]}/g \
+        | sed s/_NODEIP_/$node_ip/g \
         | sed s%_NODELIST_%$nodelist%g \
+        | sed s/_NODEPORT_/$((n+9000))/g \
               > $qd/tm.conf
 
     # Generate Quorum-related keys (used by Constellation)
@@ -125,6 +120,9 @@ do
     echo 'Node '$n' public key: '`cat $qd/keys/tm.pub`
 
     cat templates/start-node.sh \
+        | sed s/_PORT_/$((n+21000))/g \
+        | sed s/_RPCPORT_/$((n+22000))/g \
+        | sed s/_RAFTPORT_/$((n+23000))/g \
         | sed s/_RAFTID_/$node_number/g \
               > $qd/start-node.sh
 
@@ -149,14 +147,17 @@ do
     cat >> docker-compose.yml <<EOF
   node_$n:
     image: $image
+    restart: always
     volumes:
       - './$qd:/qdata'
-    ports:
-      - $((n+22000)):8545
-    user: '$uid:$gid'
     networks:
-            default:
-                ipv4_address: $node_ip
+      - xdc_dynamic_node_network
+    ports:
+      - $((n+21000)):$((n+21000))
+      - $((n+22000)):$((n+22000))
+      - $((n+23000)):$((n+23000))
+      - $((n+9000)):$((n+9000))
+    user: '$uid:$gid'
 EOF
 
     let n++
@@ -165,7 +166,14 @@ done
 cat >> docker-compose.yml <<EOF
 
 networks:
-  default:
-    external:
-      name: staticnodes_quorum_net
+  xdc_dynamic_node_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: $docker_subnet
 EOF
+
+echo '[5] Removing temporary containers.'
+# Remove temporary containers created for keys & enode addresses - Note this will remove ALL stopped containers
+docker container prune -f > /dev/null 2>&1
