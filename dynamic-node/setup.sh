@@ -11,6 +11,20 @@
 
 #### Configuration options #############################################
 
+RPC_PORT=22000
+GETH_PORT=21000
+RAFT_PORT=23000
+CONSTELLATION_PORT=9000
+
+function isPortInUse {
+        if nc -zv -w30 $1 $2 <<< '' &> /dev/null
+        then
+                return 1
+        else
+                return 0
+        fi
+}
+
 read -p "Please enter public IP of this host machine : " node_ip
 ips=("$node_ip")
 
@@ -19,6 +33,22 @@ read -p "Please enter a unique subnet to use for local docker n/w (e.g. 172.13.0
 
 # Docker image name
 image=xinfinorg/quorum:v2.0.0
+
+        until $(isPortInUse 'localhost' $((1+GETH_PORT+OFFSET)))
+        do
+                if ! $(isPortInUse 'localhost' $((1+GETH_PORT+OFFSET))); then
+                        echo "Port is in use so auto incrementing"
+                        echo $((1+GETH_PORT+4000))
+                        OFFSET=$OFFSET+4000
+                        echo $OFFSET
+                else
+                        echo "Port is free so using default port"
+                        echo $((1+GETH_PORT))
+                        OFFSET=0
+                        echo $OFFSET
+                fi
+
+done
 
 ########################################################################
 
@@ -64,9 +94,9 @@ do
 
     # Add the enode to enode-url.json
     sep=`[[ $n < $nnodes ]] && echo ","`
-    echo '  "enode://'$enode'@'$ip':'$((n+21000))'?discport=0&raftport='$((n+23000))'"'$sep >> enode-url.json
+    echo '  "enode://'$enode'@'$ip':'$((n+21000+OFFSET))'?discport=0&raftport='$((n+23000+OFFSET))'"'$sep >> enode-url.json
     echo '  [*] Login to geth console of any node of existing cluster & run the following command:'
-    echo '  raft.addPeer("enode://'$enode'@'$ip':'$((n+21000))'?discport=0&raftport='$((n+23000))'")'
+    echo '  raft.addPeer("enode://'$enode'@'$ip':'$((n+21000+OFFSET))'?discport=0&raftport='$((n+23000+OFFSET))'")'
     let n++
 done
 echo "]" >> enode-url.json
@@ -95,7 +125,7 @@ n=$node_number
 for ip in ${ips[*]}
 do
     sep=`[[ $ip != ${ips[0]} ]] && echo ","`
-    nodelist=${nodelist}${sep}'"http://'${public_ip}':'$((n+9000))'/"'
+    nodelist=${nodelist}${sep}'"http://'${public_ip}':'$((n+9000+OFFSET))'/"'
     let n++
 done
 
@@ -112,7 +142,7 @@ do
     cat templates/tm.conf \
         | sed s/_NODEIP_/$node_ip/g \
         | sed s%_NODELIST_%$nodelist%g \
-        | sed s/_NODEPORT_/$((n+9000))/g \
+        | sed s/_NODEPORT_/$((n+9000+OFFSET))/g \
               > $qd/tm.conf
 
     # Generate Quorum-related keys (used by Constellation)
@@ -120,9 +150,9 @@ do
     echo 'Node '$n' public key: '`cat $qd/keys/tm.pub`
 
     cat templates/start-node.sh \
-        | sed s/_PORT_/$((n+21000))/g \
-        | sed s/_RPCPORT_/$((n+22000))/g \
-        | sed s/_RAFTPORT_/$((n+23000))/g \
+        | sed s/_PORT_/$((n+21000+OFFSET))/g \
+        | sed s/_RPCPORT_/$((n+22000+OFFSET))/g \
+        | sed s/_RAFTPORT_/$((n+23000+OFFSET))/g \
         | sed s/_RAFTID_/$node_number/g \
               > $qd/start-node.sh
 
@@ -153,10 +183,10 @@ do
     networks:
       - xdc_dynamic_node_network
     ports:
-      - $((n+21000)):$((n+21000))
-      - $((n+22000)):$((n+22000))
-      - $((n+23000)):$((n+23000))
-      - $((n+9000)):$((n+9000))
+      - $((n+21000+OFFSET)):$((n+21000+OFFSET))
+      - $((n+22000+OFFSET)):$((n+22000+OFFSET))
+      - $((n+23000+OFFSET)):$((n+23000+OFFSET))
+      - $((n+9000+OFFSET)):$((n+9000+OFFSET))
     user: '$uid:$gid'
 EOF
 
