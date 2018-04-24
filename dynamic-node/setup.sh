@@ -34,22 +34,6 @@ read -p "Please enter a unique subnet to use for local docker n/w (e.g. 172.13.0
 # Docker image name
 image=xinfinorg/quorum:v2.0.0
 
-        until $(isPortInUse 'localhost' $((1+GETH_PORT+OFFSET)))
-        do
-                if ! $(isPortInUse 'localhost' $((1+GETH_PORT+OFFSET))); then
-                        echo "Port is in use so auto incrementing"
-                        echo $((1+GETH_PORT+4000))
-                        OFFSET=$OFFSET+4000
-                        echo $OFFSET
-                else
-                        echo "Port is free so using default port"
-                        echo $((1+GETH_PORT))
-                        OFFSET=0
-                        echo $OFFSET
-                fi
-
-done
-
 ########################################################################
 
 nnodes=${#ips[@]}
@@ -67,6 +51,25 @@ echo '[1] Configuring for '$nnodes' nodes.'
 read -p "Enter Node Number (e.g. 4) : " node_number
 
 n=$node_number
+
+ until $(isPortInUse 'localhost' $((n+GETH_PORT+OFFSET)))
+        do
+                if ! $(isPortInUse 'localhost' $((n+GETH_PORT+OFFSET))); then
+                        echo "Port is in use so auto incrementing"
+                        echo $((n+GETH_PORT+4000))
+                        OFFSET=$OFFSET+4000
+                        echo $OFFSET
+                else
+                        echo "Port is free so using default port"
+                        echo $((n+GETH_PORT))
+                        OFFSET=0
+                        echo $OFFSET
+                fi
+
+done
+
+
+
 for ip in ${ips[*]}
 do
     qd=qdata_$n
