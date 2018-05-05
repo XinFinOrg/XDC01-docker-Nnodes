@@ -58,5 +58,3 @@
 ### Start dynamic raft peer
     cd dynamic-node
     sudo docker-compose -p <PROJECT_NAME_DYNAMIC_NODE> up -d
-
-# Thank You
