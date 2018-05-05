@@ -3,7 +3,7 @@
 ## Launch Ubuntu 16.04 Instance
 
 ## Clone Repository
-    git clone -b "multi-node" https://github.com/XinFinorg/XDC01-docker-Nnodes.git    
+    git clone https://github.com/XinFinorg/XDC01-docker-Nnodes.git    
    
 ## Install Docker & Docker Compose
     sudo ./install_docker.sh
