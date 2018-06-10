@@ -32,7 +32,7 @@ read -p "Please enter public IP of this host machine : " public_ip
 read -p "Please enter a unique subnet to use for local docker n/w (e.g. 172.13.0.0/16) : " docker_subnet
 
 # Docker image name
-image=xinfinorg/quorum:v2.0.0
+image=xinfinorg/quorum:v2.0.1
 
 	until $(isPortInUse 'localhost' $((1+GETH_PORT+OFFSET)))
 	do
