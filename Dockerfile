@@ -15,13 +15,13 @@ RUN apt-get update && \
             wrk \
             zlib1g-dev
 
-RUN wget -q https://github.com/jpmorganchase/constellation/releases/download/v0.2.0/constellation-0.2.0-ubuntu1604.tar.xz && \
-    tar xfJ constellation-0.2.0-ubuntu1604.tar.xz && \
-    cp constellation-0.2.0-ubuntu1604/constellation-node /usr/local/bin && \
+RUN wget -q https://github.com/jpmorganchase/constellation/releases/download/v0.3.2/constellation-0.3.2-ubuntu1604.tar.xz && \
+    tar xfJ constellation-0.3.2-ubuntu1604.tar.xz && \
+    cp constellation-0.3.2-ubuntu1604/constellation-node /usr/local/bin && \
     chmod 0755 /usr/local/bin/constellation-node && \
     rm -rf constellation*
 
-ENV GOREL go1.7.3.linux-amd64.tar.gz
+ENV GOREL go1.9.2.linux-amd64.tar.gz
 ENV PATH $PATH:/usr/local/go/bin
 
 RUN wget -q https://storage.googleapis.com/golang/$GOREL && \
@@ -31,7 +31,7 @@ RUN wget -q https://storage.googleapis.com/golang/$GOREL && \
 
 RUN git clone https://github.com/jpmorganchase/quorum.git && \
     cd quorum && \
-    git checkout tags/v2.0.0 && \
+    git checkout tags/v2.0.1 && \
     make all && \
     cp build/bin/geth /usr/local/bin && \
     cp build/bin/bootnode /usr/local/bin && \
