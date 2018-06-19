@@ -9,7 +9,7 @@
     sudo ./install_docker.sh
 
 ## Pull Image from Docker Hub
-    sudo docker pull xinfinorg/quorum:v2.0.0
+    sudo docker pull xinfinorg/quorum:v2.0.2
 
 ## Setup 
 
@@ -31,10 +31,10 @@
 # Upgrade Quorum
 
 ## Pull newer version of quorum from docker hub
-    sudo docker pull xinfinorg/quorum:v2.0.1-pre
+    sudo docker pull xinfinorg/quorum:v2.0.2
 
 ## Update docker-compose.yml to use new image (specify quorum:TAG_NAME as argument)
-    sudo ./update_quorum.sh quorum:v2.0.1-pre
+    sudo ./update_quorum.sh quorum:v2.0.2
 
 ## Stop containers running old version
     sudo docker-compose -p <PROJECT_NAME_STATIC/DYNAMIC_NODE> down

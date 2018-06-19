@@ -32,7 +32,7 @@ ips=("$node_ip")
 read -p "Please enter a unique subnet to use for local docker n/w (e.g. 172.13.0.0/16) : " docker_subnet
 
 # Docker image name
-image=xinfinorg/quorum:v2.0.1
+image=xinfinorg/quorum:v2.0.2
 
 ########################################################################
 
