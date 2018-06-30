@@ -38,6 +38,24 @@ RUN git clone https://github.com/jpmorganchase/quorum.git && \
     cd .. && \
     rm -rf quorum
 
+
+ENV GOROOT=/usr/local/go/
+ENV GOPATH=/work/go
+ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+
+RUN mkdir -p "$GOPATH/src/github.com/getamis" "$GOPATH/bin" && \
+    chmod -R 777 "$GOPATH" && \
+    cd "$GOPATH/src/github.com/getamis" && \
+    git clone https://github.com/getamis/istanbul-tools.git
+
+RUN cd "$GOPATH/src/github.com/getamis/istanbul-tools" && \
+    go get github.com/getamis/istanbul-tools/cmd/istanbul && \
+    go get github.com/urfave/cli && \
+    make && \
+    cp build/bin/istanbul /usr/local/bin && \
+    cd .. && \
+    rm -rf istanbul-tools
+
 ### Create the runtime image, leaving most of the cruft behind (hopefully...)
 
 FROM ubuntu:16.04
@@ -63,6 +81,7 @@ COPY --from=builder \
         /usr/local/bin/constellation-node \
         /usr/local/bin/geth \
         /usr/local/bin/bootnode \
+        /usr/local/bin/istanbul \
     /usr/local/bin/
 
 CMD ["/qdata/start-node.sh"]
