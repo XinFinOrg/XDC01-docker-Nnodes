@@ -7,3 +7,4 @@ rm -f contract_pri.js contract_pub.js
 
 # Shouldn't be needed, but just in case:
 rm -f static-nodes.json genesis.json
+rm -rf ibft/*

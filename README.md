@@ -8,9 +8,6 @@
 ## Install Docker & Docker Compose
     sudo ./install_docker.sh
 
-## Pull Image from Docker Hub
-    sudo docker pull xinfinorg/quorum:v2.0.2
-
 ## Setup 
 
     cd static-nodes 

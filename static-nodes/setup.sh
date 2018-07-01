@@ -2,7 +2,7 @@
 
 #
 # Create all the necessary scripts, keys, configurations etc. to run
-# a cluster of N Quorum nodes with Raft consensus.
+# a cluster of N Quorum nodes with IBFT consensus.
 #
 # Run the cluster with "docker-compose up -d"
 #
@@ -13,7 +13,6 @@
 
 RPC_PORT=22000
 GETH_PORT=21000
-RAFT_PORT=23000
 CONSTELLATION_PORT=9000
 
 function isPortInUse {
@@ -79,21 +78,21 @@ done
 
 echo '[2] Creating Enodes and static-nodes.json.'
 
+# istanbul-tools
+docker run -u $uid:$gid -v $pwd/ibft:/qdata $image /bin/bash -c "cd qdata/ && /usr/local/bin/istanbul setup --num $nnodes --verbose --nodes --quorum --save"
+
+
 echo "[" > static-nodes.json
-for n in $(seq 1 $nnodes)
-do
-    qd=qdata_$n
-
-    # Generate the node's Enode and key
-    docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/bootnode -genkey /qdata/dd/nodekey
-    enode=`docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/bootnode --nodekey /qdata/dd/nodekey -writeaddress`
-
-    # Add the enode to static-nodes.json
-    sep=`[[ $n < $nnodes ]] && echo ","`
-
-    echo '"enode://'$enode'@'$public_ip':'$((n+21000+OFFSET))'?discport=0&raftport='$((n+23000+OFFSET))'"'$sep >> static-nodes.json
-
-done
+COUNT=0
+while IFS='' read -r line || [[ -n "$line" ]]; do
+  if [[ $line = *"enode"* ]]; then
+     COUNT=$(( $COUNT + 1 ))
+     enode=`echo $line | awk -F// '{print $2}' | cut -d '@' -f 1`
+     # Add the enode to static-nodes.json
+     sep=`[[ $COUNT < $nnodes ]] && echo ","`
+     echo '"enode://'$enode'@'$public_ip':'$((COUNT+21000+OFFSET))'?discport=0"'$sep >> static-nodes.json
+  fi
+done < ibft/static-nodes.json
 echo "]" >> static-nodes.json
 
 #### Create accounts, keys and genesis.json file #######################
@@ -102,12 +101,14 @@ echo '[3] Copying genesis.json'
 
 for n in $(seq 1 $nnodes)
 do
+    k=$((n-1))
     qd=qdata_$n
     # Generate passwords.txt for unlocking accounts, To-Do Accept user-input for password
     touch $qd/passwords.txt
-    cp ../genesis.json $qd/genesis.json
+    cp ibft/genesis.json $qd/genesis.json
     mkdir -p $qd/dd/keystore
     cp ../keys/key.json $qd/dd/keystore/key
+    cp ibft/$k/nodekey $qd/dd/nodekey
 done
 
 #### Make node list for tm.conf ########################################
@@ -143,12 +144,12 @@ do
     cat templates/start-node.sh \
         | sed s/_PORT_/$((n+21000+OFFSET))/g \
         | sed s/_RPCPORT_/$((n+22000+OFFSET))/g \
-        | sed s/_RAFTPORT_/$((n+23000+OFFSET))/g \
               > $qd/start-node.sh
 
     chmod 755 $qd/start-node.sh
 
 done
+rm -rf ibft/*
 rm -rf static-nodes.json
 
 #### Create the docker-compose file ####################################
@@ -194,4 +195,3 @@ EOF
 echo '[5] Removing temporary containers.'
 # Remove temporary containers created for keys & enode addresses - Note this will remove ALL stopped containers
 docker container prune -f > /dev/null 2>&1
-
