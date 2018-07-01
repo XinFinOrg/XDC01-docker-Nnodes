@@ -24,7 +24,7 @@ function isPortInUse {
         fi
 }
 
-read -p "Please enter no. of inital nodes you wish to setup (min. 2) : " nnodes
+read -p "Please enter no. of inital validator nodes you wish to setup (min. 2) : " nnodes
 read -p "Please enter public IP of this host machine : " public_ip
 
 # One Docker container will be configured for each IP address in this subnet
