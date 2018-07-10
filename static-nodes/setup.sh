@@ -2,7 +2,7 @@
 
 #
 # Create all the necessary scripts, keys, configurations etc. to run
-# a cluster of N Quorum nodes with IBFT consensus.
+# a cluster of Quorum nodes with IBFT consensus.
 #
 # Run the cluster with "docker-compose up -d"
 #
@@ -24,7 +24,8 @@ function isPortInUse {
         fi
 }
 
-read -p "Please enter no. of inital validator nodes you wish to setup (min. 2) : " nnodes
+read -p "Please enter no. of inital VALIDATOR nodes you wish to setup: " num_validator_nodes
+read -p "Please enter no. of inital REGULAR nodes you wish to setup : " num_regular_nodes
 read -p "Please enter public IP of this host machine : " public_ip
 
 # One Docker container will be configured for each IP address in this subnet
@@ -51,17 +52,13 @@ done
 
 ########################################################################
 
-if [[ $nnodes < 2 ]]
-then
-    echo "ERROR: There must be more than one node IP address."
-    exit 1
-fi
-
 ./cleanup.sh
 
 uid=`id -u`
 gid=`id -g`
 pwd=`pwd`
+
+nnodes=$(($num_validator_nodes+$num_regular_nodes))
 
 #### Create directories for each node's configuration ##################
 
@@ -74,41 +71,52 @@ do
     mkdir -p $qd/dd/geth
 done
 
+echo '[2] Creating keys for validator nodes'
+
+# Use istanbul-tools for generating validator nodekeys, genesis/extradata
+docker run -u $uid:$gid -v $pwd/ibft:/qdata $image /bin/bash -c "cd qdata/ && /usr/local/bin/istanbul setup --num $num_validator_nodes --verbose --nodes --quorum --save"
+
 #### Make static-nodes.json and store keys #############################
 
-echo '[2] Creating Enodes and static-nodes.json.'
-
-# istanbul-tools
-docker run -u $uid:$gid -v $pwd/ibft:/qdata $image /bin/bash -c "cd qdata/ && /usr/local/bin/istanbul setup --num $nnodes --verbose --nodes --quorum --save"
-
+echo '[3] Creating static-nodes.json.'
 
 echo "[" > static-nodes.json
-COUNT=0
-while IFS='' read -r line || [[ -n "$line" ]]; do
-  if [[ $line = *"enode"* ]]; then
-     COUNT=$(( $COUNT + 1 ))
-     enode=`echo $line | awk -F// '{print $2}' | cut -d '@' -f 1`
-     # Add the enode to static-nodes.json
-     sep=`[[ $COUNT < $nnodes ]] && echo ","`
-     echo '"enode://'$enode'@'$public_ip':'$((COUNT+21000+OFFSET))'?discport=0"'$sep >> static-nodes.json
-  fi
-done < ibft/static-nodes.json
+for n in $(seq 1 $nnodes)
+do
+    qd=qdata_$n
+    v=$((n-1))
+
+    if [[ $n -le $num_validator_nodes ]]
+    then
+	    cp ibft/$v/nodekey $qd/dd/nodekey
+    else
+	# Generate the regular node's Enode and key
+    	docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/bootnode -genkey /qdata/dd/nodekey
+    fi
+
+    enode=`docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/bootnode --nodekey /qdata/dd/nodekey -writeaddress`
+
+    # Add the enode to static-nodes.json
+    sep=`[[ $n < $nnodes ]] && echo ","`
+
+    echo '"enode://'$enode'@'$public_ip':'$((n+21000+OFFSET))'?discport=0"'$sep >> static-nodes.json
+
+done
 echo "]" >> static-nodes.json
+
 
 #### Create accounts, keys and genesis.json file #######################
 
-echo '[3] Copying genesis.json'
+echo '[4] Copying genesis.json'
 
 for n in $(seq 1 $nnodes)
 do
-    k=$((n-1))
     qd=qdata_$n
     # Generate passwords.txt for unlocking accounts, To-Do Accept user-input for password
     touch $qd/passwords.txt
     cp ibft/genesis.json $qd/genesis.json
     mkdir -p $qd/dd/keystore
     cp ../keys/key.json $qd/dd/keystore/key
-    cp ibft/$k/nodekey $qd/dd/nodekey
 done
 
 #### Make node list for tm.conf ########################################
@@ -120,10 +128,9 @@ do
     nodelist=${nodelist}${sep}'"http://'${public_ip}':'$((n+9000+OFFSET))'/"'
 done
 
-
 #### Complete each node's configuration ################################
 
-echo '[4] Creating Quorum keys and finishing configuration.'
+echo '[5] Creating Quorum keys and finishing configuration.'
 
 for n in $(seq 1 $nnodes)
 do
@@ -141,11 +148,20 @@ do
     docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/constellation-node --generatekeys=qdata/keys/tm < /dev/null > /dev/null
     echo 'Node '$n' public key: '`cat $qd/keys/tm.pub`
 
-    cat templates/start-node.sh \
-        | sed s/_PORT_/$((n+21000+OFFSET))/g \
-        | sed s/_RPCPORT_/$((n+22000+OFFSET))/g \
+    if [[ $n -le $num_validator_nodes ]]
+    then
+         cat templates/start-node.sh \
+       	    | sed s/_PORT_/$((n+21000+OFFSET))/g \
+            | sed s/_RPCPORT_/$((n+22000+OFFSET))/g \
+            | sed s/_MINE_/"--mine"/g \
               > $qd/start-node.sh
-
+    else
+	  cat templates/start-node.sh \
+            | sed s/_PORT_/$((n+21000+OFFSET))/g \
+            | sed s/_RPCPORT_/$((n+22000+OFFSET))/g \
+            | sed s/_MINE_/""/g \
+              > $qd/start-node.sh
+    fi
     chmod 755 $qd/start-node.sh
 
 done
