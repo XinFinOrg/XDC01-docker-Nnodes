@@ -105,6 +105,36 @@ done
 echo "]" >> static-nodes.json
 
 
+
+
+
+
+
+# generate the allocated accounts section to be used in both Raft and IBFT
+for i in $(seq 1 $nnodes)
+do
+    qd=qdata_$i
+
+    # Generate an Ether account for the node
+    touch $qd/passwords.txt
+    create_account="docker run -u $uid:$gid -v $pwd/$qd:/qdata $image /usr/local/bin/geth --datadir=/qdata --keystore=/qdata/dd/keystore --password /qdata/passwords.txt account new"
+    account1=`$create_account | cut -c 11-50`
+    echo "Accounts for node $i: $account1"
+
+    # Add the account to the genesis block so it has some Ether at start-up
+    sep=`[[ $i < $nnodes ]] && echo ","`
+    cat >> alloc.json <<EOF
+    "${account1}": { "balance": "1000000000000000000000000000" }${sep}
+EOF
+done
+
+
+ALLOC=`cat alloc.json`
+cat ibft/genesis.json | jq ". | .alloc = {$ALLOC}" > genesis.json
+
+
+
+
 #### Create accounts, keys and genesis.json file #######################
 
 echo '[4] Copying genesis.json'
@@ -113,8 +143,8 @@ for n in $(seq 1 $nnodes)
 do
     qd=qdata_$n
     # Generate passwords.txt for unlocking accounts, To-Do Accept user-input for password
-    touch $qd/passwords.txt
-    cp ibft/genesis.json $qd/genesis.json
+    # touch $qd/passwords.txt
+    cp genesis.json $qd/genesis.json
     mkdir -p $qd/dd/keystore
     cp ../keys/key.json $qd/dd/keystore/key
 done
@@ -167,6 +197,7 @@ do
 done
 rm -rf ibft/*
 rm -rf static-nodes.json
+rm -rf alloc.json
 
 #### Create the docker-compose file ####################################
 

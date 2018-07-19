@@ -6,5 +6,5 @@ rm -f docker-compose.yml.bak
 rm -f contract_pri.js contract_pub.js
 
 # Shouldn't be needed, but just in case:
-rm -f static-nodes.json genesis.json
+rm -f static-nodes.json genesis.json alloc.json
 rm -rf ibft/*
