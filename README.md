@@ -5,8 +5,8 @@
 ## Clone Repository
     git clone -b "istanbul-tools" https://github.com/XinFinorg/XDC01-docker-Nnodes.git    
    
-## Install Docker & Docker Compose
-    sudo ./install_docker.sh
+## Install docker, docker-compose, jq
+    sudo ./install.sh
     
 ## Setup an IBFT Network
 

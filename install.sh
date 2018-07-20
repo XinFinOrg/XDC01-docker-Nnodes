@@ -30,10 +30,21 @@ function installDocker(){
     echo "Docker Installed successfully"
 }
 
+function installjq(){
+    echo "Installing jq"
+    sudo apt-get update
+    sudo apt-get install jq -y    
+}
+
+
 function init(){
 
     if [ -z "$(which docker)" ]; then
         installDocker
+    fi
+
+    if [ -z "$(which jq)" ]; then
+        installjq
     fi
 }
 
@@ -41,7 +52,7 @@ function init(){
 function main(){
 
     init
-    
+
 }
 
 main
