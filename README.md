@@ -10,17 +10,17 @@
     
 ## Setup an IBFT Network
 
-    cd static-nodes 
+    cd scripts
     sudo ./setup.sh
 
-    Enter the inital number of nodes & public IP address of host machine & then start the nodes using.
+    Enter the inital number of nodes & public IP address of host machine & then start the nodes using
 
-    sudo docker-compose -p <PROJECT_NAME_STATIC_NODE> up -d
+    sudo docker-compose up -d
 
 ## Stopping
 
-    sudo docker-compose -p <PROJECT_NAME_STATIC_NODE> down
+    sudo docker-compose -p down
 
-## Accessing the GETH console of First Node
+## Accessing GETH console
 
-    sudo docker exec -it PROJECT_NAME_STATIC_NODES_node_1_1 geth attach /qdata/dd/geth.ipc
+    sudo docker exec -it node_# geth attach /qdata/dd/geth.ipc

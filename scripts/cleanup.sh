@@ -8,3 +8,6 @@ rm -f contract_pri.js contract_pub.js
 # Shouldn't be needed, but just in case:
 rm -f static-nodes.json genesis.json alloc.json
 rm -rf ibft/*
+rm -rf bootnode
+rm -rf nohup.out bootlog.log
+
