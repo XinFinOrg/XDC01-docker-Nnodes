@@ -3,7 +3,7 @@
 ## Launch Ubuntu 16.04 Instance
 
 ## Clone Repository
-    git clone -b "istanbul-tools" https://github.com/XinFinorg/XDC01-docker-Nnodes.git    
+    git clone -b "istanbul-tools-with-discovery" https://github.com/XinFinorg/XDC01-docker-Nnodes.git    
    
 ## Install docker, docker-compose, jq
     sudo ./install.sh
