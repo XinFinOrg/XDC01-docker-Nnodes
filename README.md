@@ -1,6 +1,30 @@
 # XDC01-docker-Nnodes 
 
-## Launch Ubuntu 16.04 Instance
+## Prerequisite
+**Operating System**: Ubuntu 16.04 64-bit
+
+**Tools**: Docker, Docker Compose
+
+**Hardware**:
+
+| Hardware | Minimum | Desired |
+|:------- |:-------- |:---------|
+| **CPU's**: | 2 |  4 |
+| **Memory**: | 4 GB |  8 GB |
+| **Storage**: | 100 GB |  500 GB |
+
+## Network
+
+Following network ports need to be open for the nodes to communicate
+
+| Port | Type | Definition |
+|:------:|:-----:|:---------- |
+|21001-2100*| TCP/UDP | GETH |
+|22001-2200*| TCP | RPC |
+|23001-2300*| TCP | RAFT |
+|9001-900*| TCP | Constellation |
+
+*-auto-increment depending on number of nodes
 
 ## Clone Repository
     git clone https://github.com/XinFinorg/XDC01-docker-Nnodes.git    
