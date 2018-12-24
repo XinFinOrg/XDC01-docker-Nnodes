@@ -91,6 +91,10 @@ Following network ports need to be open for the nodes to communicate
     cd dynamic-node
     sudo docker-compose -p <PROJECT_NAME_DYNAMIC_NODE> up -d
 
+## Contacting Us
+
+Join our [Telegram Developer Group](https://t.me/XinFinDevelopers) and put up your queries or raise issue in Github to get answer. We would love to answer your questions.
 
 
-[fig1]: /docs/CoreQuorumNetwork.jpg "a"
+
+[fig1]: /docs/CoreQuorumNetwork.jpg "XinFin Core Quorum Network"
