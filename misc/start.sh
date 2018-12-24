@@ -1,1 +1,0 @@
-nohup geth --datadir $PWD/Blockchain --raft --raftport 50401 --raftblocktime 750 --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft --rpcport 8545 --port 21001 --networkid 21101502 2>>$PWD/Blockchain/gethNode.log &
