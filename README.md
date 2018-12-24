@@ -1,6 +1,11 @@
 # XDC01-docker-Nnodes 
 #### Create and customize your XDC01 private chain with ShellScript in Just minutes. 
 
+XinFin Core Quorum Network
+
+![XinFin Core Quorum Network][fig1]
+
+
 
 
 ## Prerequisite
@@ -85,3 +90,7 @@ Following network ports need to be open for the nodes to communicate
 ### Start dynamic raft peer
     cd dynamic-node
     sudo docker-compose -p <PROJECT_NAME_DYNAMIC_NODE> up -d
+
+
+
+[fig1]: /docs/CoreQuorumNetwork.jpg "a"
