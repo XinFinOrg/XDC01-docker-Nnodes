@@ -9,7 +9,7 @@ XinFin Core Quorum Network
 
 
 ## Prerequisite
-**Operating System**: Ubuntu 16.04 64-bit
+**Operating System**: Ubuntu 16.04 64-bit or higher
 
 **Tools**: Docker, Docker Compose
 
