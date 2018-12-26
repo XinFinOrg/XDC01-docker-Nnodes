@@ -1,5 +1,5 @@
 # XDC01-docker-Nnodes 
-#### Create and customize your XDC01 private chain with ShellScript in Just minutes. 
+#### Create and customize your XDC01 private chain within minutes. 
 
 XinFin Core Quorum Network
 
@@ -63,10 +63,10 @@ Following network ports need to be open for the nodes to communicate
 # Upgrade Quorum
 
 ## Pull newer version of quorum from docker hub
-    sudo docker pull xinfinorg/quorum:v2.1.0
+    sudo docker pull xinfinorg/quorum:v2.x.x
 
 ## Update docker-compose.yml to use new image (specify quorum:TAG_NAME as argument)
-    sudo ./update_quorum.sh quorum:v2.1.0
+    sudo ./update_quorum.sh quorum:v2.x.x
 
 ## Stop containers running old version
     sudo docker-compose -p <PROJECT_NAME_STATIC/DYNAMIC_NODE> down
