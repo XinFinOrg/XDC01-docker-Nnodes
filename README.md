@@ -95,7 +95,7 @@ Following network ports need to be open for the nodes to communicate
 
 ## Contacting Us
 
-Join our [Telegram Developer Group](https://t.me/XinFinDevelopers) and put up your queries or raise issue in Github to get answer. We would love to answer your questions.
+Join our [Telegram Developer Group](https://t.me/joinchat/IDjEOEUaNJNpbeM-c1YtZw) and put up your queries or raise issue in Github to get answer. We would love to answer your questions.
 
 
 
