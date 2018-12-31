@@ -26,7 +26,7 @@ function isPortInUse {
 }
 
 read -p "Please enter no. of inital nodes you wish to setup (min. 2) : " nnodes
-read -p "Please enter public IP of this host machine : " public_ip
+read -p "Please enter private IP of this host machine (use public IP if you are setting it up on cloud server) : " public_ip
 
 # One Docker container will be configured for each IP address in this subnet
 read -p "Please enter a unique subnet to use for local docker n/w (e.g. 172.13.0.0/16) : " docker_subnet
