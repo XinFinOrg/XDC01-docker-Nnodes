@@ -48,7 +48,7 @@ Following network ports need to be open for the nodes to communicate
     cd static-nodes 
     sudo ./setup.sh
 
-    Enter number of nodes & public IP of host machine (private IP in case of local setup, assigned by router)
+    Enter number of nodes, private IP of host machine & unique docker subnet
 
     sudo docker-compose -p <PROJECT_NAME_STATIC_NODE> up -d
 
