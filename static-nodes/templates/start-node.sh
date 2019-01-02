@@ -10,7 +10,7 @@ set -e
 ### Configuration Options
 TMCONF=/qdata/tm.conf
 
-GETH_ARGS="--datadir /qdata/dd --raft --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft --nodiscover --unlock 0 --password /qdata/passwords.txt --rpcport _RPCPORT_ --port _PORT_ --raftport _RAFTPORT_"
+GETH_ARGS="--networkid 2018 --datadir /qdata/dd --raft --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft --nodiscover --unlock 0 --password /qdata/passwords.txt --rpcport _RPCPORT_ --port _PORT_ --raftport _RAFTPORT_"
 
 if [ ! -d /qdata/dd/geth/chaindata ]; then
   echo "[*] Mining Genesis block"

@@ -8,8 +8,10 @@
   "config": {
     "homesteadBlock": 0,
     "chainId": 2018,
-    "eip155Block": null,
-    "eip158Block": null,
+    "eip150Block": 1,
+    "eip155Block": 0,
+    "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "eip158Block": 1,
     "isQuorum": true
   },
   "difficulty": "0x0",
