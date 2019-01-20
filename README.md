@@ -92,6 +92,22 @@ Following network ports need to be open for the nodes to communicate
   
 ## Run new version     
     sudo docker-compose -p <PROJECT_NAME_STATIC/DYNAMIC_NODE> up -d
+    
+   
+# Windows / macOS Support Using Vagrant
+1. Install Oracle [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+2. Install [Vagrant](https://www.vagrantup.com/downloads.html)
+3. Install [GIT](https://gitforwindows.org/)
+4. Launch command prompt & follow the commands below  
+   ```sh
+    git clone https://github.com/XinFinOrg/XDC01-docker-Nnodes.git
+    cd XDC01-docker-Nnodes
+    vagrant up
+    vagrant ssh
+    ```
+5. XDC01-docker-Nnodes is automatically copied to /home/vagrant/ follow Step 1, 2 & 3 as explained before in this document to complete the network setup.
+6. To shutdown the vagrant instance, run vagrant suspend. To delete it, run vagrant destroy.
+
 
 ## Contacting Us
 
