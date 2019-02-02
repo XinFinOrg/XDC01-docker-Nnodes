@@ -1,5 +1,5 @@
 # XDC01-docker-Nnodes 
-#### Create and customize your XDC01 private chain within minutes. 
+#### Create and customize your XDC01 private chain within minutes. ( please go here to setup XinFin Public node: https://github.com/XinFinOrg/XinFin-Node )
 
 XinFin Core Network
 
@@ -108,6 +108,8 @@ Following network ports need to be open for the nodes to communicate
 5. XDC01-docker-Nnodes is automatically copied to /home/vagrant/ follow Step 1, 2 & 3 as explained before in this document to complete the network setup.
 6. To shutdown the vagrant instance, run vagrant suspend. To delete it, run vagrant destroy.
 
+
+( please go here to setup XinFin Public node: https://github.com/XinFinOrg/XinFin-Node )
 
 ## Contacting Us
 
